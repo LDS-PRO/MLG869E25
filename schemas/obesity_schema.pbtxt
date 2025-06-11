@@ -1,0 +1,443 @@
+feature {
+  name: "Gender"
+  type: BYTES
+  string_domain {
+    value: "Male"
+    value: "Female"
+  }
+  presence {
+    min_fraction: 1.0
+    min_count: 1
+  }
+  skew_comparator {
+    jensen_shannon_divergence {
+      threshold: 0.1
+    }
+  }
+  shape {
+    dim {
+      size: 1
+    }
+  }
+}
+feature {
+  name: "Age"
+  type: FLOAT
+  float_domain {
+    min: 10.0
+    max: 100.0
+  }
+  presence {
+    min_fraction: 1.0
+    min_count: 1
+  }
+  skew_comparator {
+    jensen_shannon_divergence {
+      threshold: 0.1
+    }
+  }
+  shape {
+    dim {
+      size: 1
+    }
+  }
+}
+feature {
+  name: "Height"
+  type: FLOAT
+  float_domain {
+    min: 1.0
+    max: 2.5
+  }
+  presence {
+    min_fraction: 1.0
+    min_count: 1
+  }
+  skew_comparator {
+    jensen_shannon_divergence {
+      threshold: 0.1
+    }
+  }
+  shape {
+    dim {
+      size: 1
+    }
+  }
+}
+feature {
+  name: "Weight"
+  type: FLOAT
+  float_domain {
+    min: 30.0
+    max: 200.0
+  }
+  presence {
+    min_fraction: 1.0
+    min_count: 1
+  }
+  skew_comparator {
+    jensen_shannon_divergence {
+      threshold: 0.1
+    }
+  }
+  shape {
+    dim {
+      size: 1
+    }
+  }
+}
+feature {
+  name: "family_history_with_overweight"
+  type: BYTES
+  string_domain {
+    value: "yes"
+    value: "no"
+  }
+  presence {
+    min_fraction: 1.0
+    min_count: 1
+  }
+  skew_comparator {
+    jensen_shannon_divergence {
+      threshold: 0.1
+    }
+  }
+  shape {
+    dim {
+      size: 1
+    }
+  }
+}
+feature {
+  name: "FAVC"
+  type: BYTES
+  string_domain {
+    value: "yes"
+    value: "no"
+  }
+  presence {
+    min_fraction: 1.0
+    min_count: 1
+  }
+  skew_comparator {
+    jensen_shannon_divergence {
+      threshold: 0.1
+    }
+  }
+  shape {
+    dim {
+      size: 1
+    }
+  }
+}
+feature {
+  name: "FCVC"
+  type: FLOAT
+  float_domain {
+    min: 1.0
+    max: 3.0
+  }
+  presence {
+    min_fraction: 1.0
+    min_count: 1
+  }
+  skew_comparator {
+    jensen_shannon_divergence {
+      threshold: 0.1
+    }
+  }
+  shape {
+    dim {
+      size: 1
+    }
+  }
+}
+feature {
+  name: "NCP"
+  type: FLOAT
+  float_domain {
+    min: 1.0
+    max: 5.0
+  }
+  presence {
+    min_fraction: 1.0
+    min_count: 1
+  }
+  skew_comparator {
+    jensen_shannon_divergence {
+      threshold: 0.1
+    }
+  }
+  shape {
+    dim {
+      size: 1
+    }
+  }
+}
+feature {
+  name: "CAEC"
+  type: BYTES
+  string_domain {
+    value: "no"
+    value: "Sometimes"
+    value: "Frequently"
+    value: "Always"
+  }
+  presence {
+    min_fraction: 1.0
+    min_count: 1
+  }
+  skew_comparator {
+    jensen_shannon_divergence {
+      threshold: 0.1
+    }
+  }
+  shape {
+    dim {
+      size: 1
+    }
+  }
+}
+feature {
+  name: "SMOKE"
+  type: BYTES
+  string_domain {
+    value: "yes"
+    value: "no"
+  }
+  presence {
+    min_fraction: 1.0
+    min_count: 1
+  }
+  skew_comparator {
+    jensen_shannon_divergence {
+      threshold: 0.1
+    }
+  }
+  shape {
+    dim {
+      size: 1
+    }
+  }
+}
+feature {
+  name: "CH2O"
+  type: FLOAT
+  float_domain {
+    min: 0.0
+    max: 4.0
+  }
+  presence {
+    min_fraction: 1.0
+    min_count: 1
+  }
+  skew_comparator {
+    jensen_shannon_divergence {
+      threshold: 0.1
+    }
+  }
+  shape {
+    dim {
+      size: 1
+    }
+  }
+}
+feature {
+  name: "SCC"
+  type: BYTES
+  string_domain {
+    value: "yes"
+    value: "no"
+  }
+  presence {
+    min_fraction: 1.0
+    min_count: 1
+  }
+  skew_comparator {
+    jensen_shannon_divergence {
+      threshold: 0.1
+    }
+  }
+  shape {
+    dim {
+      size: 1
+    }
+  }
+}
+feature {
+  name: "FAF"
+  type: FLOAT
+  float_domain {
+    min: 0.0
+    max: 7.0
+  }
+  presence {
+    min_fraction: 1.0
+    min_count: 1
+  }
+  skew_comparator {
+    jensen_shannon_divergence {
+      threshold: 0.1
+    }
+  }
+  shape {
+    dim {
+      size: 1
+    }
+  }
+}
+feature {
+  name: "TUE"
+  type: FLOAT
+  float_domain {
+    min: 0.0
+    max: 24.0
+  }
+  presence {
+    min_fraction: 1.0
+    min_count: 1
+  }
+  skew_comparator {
+    jensen_shannon_divergence {
+      threshold: 0.1
+    }
+  }
+  shape {
+    dim {
+      size: 1
+    }
+  }
+}
+feature {
+  name: "CALC"
+  type: BYTES
+  string_domain {
+    value: "no"
+    value: "Sometimes"
+    value: "Frequently"
+    value: "Always"
+  }
+  presence {
+    min_fraction: 1.0
+    min_count: 1
+  }
+  skew_comparator {
+    jensen_shannon_divergence {
+      threshold: 0.1
+    }
+  }
+  shape {
+    dim {
+      size: 1
+    }
+  }
+}
+feature {
+  name: "MTRANS"
+  type: BYTES
+  string_domain {
+    value: "Public_Transportation"
+    value: "Automobile"
+    value: "Walking"
+    value: "Motorbike"
+    value: "Bike"
+  }
+  presence {
+    min_fraction: 1.0
+    min_count: 1
+  }
+  skew_comparator {
+    jensen_shannon_divergence {
+      threshold: 0.1
+    }
+  }
+  shape {
+    dim {
+      size: 1
+    }
+  }
+}
+feature {
+  name: "NObeyesdad"
+  type: BYTES
+  string_domain {
+    value: "Normal_Weight"
+    value: "Overweight_Level_I"
+    value: "Overweight_Level_II"
+    value: "Obesity_Type_I"
+    value: "Insufficient_Weight"
+    value: "Obesity_Type_II"
+    value: "Obesity_Type_III"
+  }
+  presence {
+    min_fraction: 1.0
+    min_count: 1
+  }
+  skew_comparator {
+    jensen_shannon_divergence {
+      threshold: 0.1
+    }
+  }
+  shape {
+    dim {
+      size: 1
+    }
+  }
+}
+string_domain {
+  name: "Gender"
+  value: "Female"
+  value: "Male"
+}
+string_domain {
+  name: "family_history_with_overweight"
+  value: "no"
+  value: "yes"
+}
+string_domain {
+  name: "FAVC"
+  value: "no"
+  value: "yes"
+}
+string_domain {
+  name: "CAEC"
+  value: "Always"
+  value: "Frequently"
+  value: "Sometimes"
+  value: "no"
+}
+string_domain {
+  name: "SMOKE"
+  value: "no"
+  value: "yes"
+}
+string_domain {
+  name: "SCC"
+  value: "no"
+  value: "yes"
+}
+string_domain {
+  name: "CALC"
+  value: "Always"
+  value: "Frequently"
+  value: "Sometimes"
+  value: "no"
+}
+string_domain {
+  name: "MTRANS"
+  value: "Automobile"
+  value: "Bike"
+  value: "Motorbike"
+  value: "Public_Transportation"
+  value: "Walking"
+}
+string_domain {
+  name: "NObeyesdad"
+  value: "Insufficient_Weight"
+  value: "Normal_Weight"
+  value: "Obesity_Type_I"
+  value: "Obesity_Type_II"
+  value: "Obesity_Type_III"
+  value: "Overweight_Level_I"
+  value: "Overweight_Level_II"
+}

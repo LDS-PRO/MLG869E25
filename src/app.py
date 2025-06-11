@@ -1,17 +1,20 @@
 import streamlit as st
 import pandas as pd
 import joblib
+import os
 import numpy as np
+from config import MODELS_DIR
+
 
 # Charger tous les actifs de prétraitement et le modèle
 try:
-    model = joblib.load('obesity_model.joblib')
-    target_encoder = joblib.load('target_label_encoder.joblib')
-    age_processing_info = joblib.load('age_processing_info.joblib')
-    ordinal_mappings = joblib.load('ordinal_mappings.joblib')
-    winsor_limits = joblib.load('winsor_limits.joblib')
-    model_columns = joblib.load('model_columns.joblib') # Liste des colonnes attendues par le modèle
-    scaler = joblib.load('scaler.joblib')
+    model = joblib.load(os.path.join(MODELS_DIR,'obesity_model.joblib'))
+    target_encoder = joblib.load(os.path.join(MODELS_DIR,'target_label_encoder.joblib'))
+    age_processing_info = joblib.load(os.path.join(MODELS_DIR,'age_processing_info.joblib'))
+    ordinal_mappings = joblib.load(os.path.join(MODELS_DIR,'ordinal_mappings.joblib'))
+    winsor_limits = joblib.load(os.path.join(MODELS_DIR,'winsor_limits.joblib'))
+    model_columns = joblib.load(os.path.join(MODELS_DIR,'model_columns.joblib')) 
+    scaler = joblib.load(os.path.join(MODELS_DIR,'scaler.joblib'))
 except FileNotFoundError as e:
     st.error(f"Erreur de chargement d'un fichier d'actif : {e}. Veuillez exécuter le script d'entraînement et de sauvegarde d'abord.")
     st.stop()

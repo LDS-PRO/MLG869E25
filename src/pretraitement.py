@@ -5,9 +5,10 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
 from scipy.stats.mstats import winsorize
 import joblib 
+from config import DATASET_PATH
 
 try:
-    df = pd.read_csv('ObesityDataSet_raw_and_data_sinthetic.csv')
+    df = pd.read_csv(DATASET_PATH)
 except FileNotFoundError:
     print("Le fichier 'ObesityDataSet_raw_and_data_sinthetic.csv' n'a pas été trouvé. Veuillez vérifier le chemin.")
     exit()
