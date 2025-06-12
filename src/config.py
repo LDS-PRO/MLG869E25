@@ -1,32 +1,32 @@
+# src/config.py
 import os
 
+# --- Chemins du Projet ---
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA_DIR = os.path.join(PROJECT_ROOT, 'data')
-SCHEMA_DIR = os.path.join(PROJECT_ROOT, 'schemas')
 MODELS_DIR = os.path.join(PROJECT_ROOT, 'models')
 
+# --- Fichiers ---
 DATASET_PATH = os.path.join(DATA_DIR, 'ObesityDataSet_raw_and_data_sinthetic.csv')
-GENERATED_SCHEMA_PATH = os.path.join(SCHEMA_DIR, 'obesity_schema.pbtxt')
+MODEL_FILENAME = 'best_obesity_model_ensemble_no_bmi.pkl'
+TARGET_ENCODER_FILENAME = 'target_label_encoder.joblib'
+FEATURE_MAPPINGS_FILENAME = 'feature_mappings.joblib'
+MODEL_COLUMNS_FILENAME = 'model_columns.joblib'
+SHAP_SUMMARY_FILENAME = 'shap_summary.joblib'
 
+# --- Mappings ---
+TRANSPORT_MAP = {'Walking': 4, 'Bike': 3, 'Public_Transportation': 2, 'Motorbike': 1, 'Automobile': 0}
+EATING_FREQ_MAP = {'no': 0, 'Sometimes': 1, 'Frequently': 2, 'Always': 3}
 
-# --- Paramètres de Validation ---
-SKEW_THRESHOLD = 0.1
+# --- Paramètres du Modèle ---
+# Ordre final des colonnes pour l'entraînement et la prédiction
+FINAL_MODEL_COLUMNS = [
+    'Gender', 'Age', 'Height', 'family_history_with_overweight', 'FAVC', 'FCVC',
+    'NCP', 'CH2O', 'FAF', 'transport_activity_level', 'eating_between_meals_numeric',
+    'alcohol_numeric', 'genetic_diet_risk', 'activity_calorie_balance',
+    'Age_squared', 'Is_Young', 'Is_MiddleAge', 'healthy_score', 'unhealthy_score',
+    'sedentary_risk'
+]
 
-# Définition des règles pour le schéma
-CATEGORICAL_FEATURES_WITH_DOMAINS = {
-    'Gender': ['Male', 'Female'],
-    'family_history_with_overweight': ['yes', 'no'],
-    'FAVC': ['yes', 'no'],
-    'CAEC': ['no', 'Sometimes', 'Frequently', 'Always'],
-    'SMOKE': ['yes', 'no'],
-    'SCC': ['yes', 'no'],
-    'CALC': ['no', 'Sometimes', 'Frequently', 'Always'],
-    'MTRANS': ['Public_Transportation', 'Automobile', 'Walking', 'Motorbike', 'Bike'],
-    'NObeyesdad': None  # Sera rempli dynamiquement à partir des données
-}
-
-NUMERICAL_FEATURES_WITH_RANGES = {
-    'Age': (10.0, 100.0), 'Height': (1.0, 2.5), 'Weight': (30.0, 200.0),
-    'FCVC': (1.0, 3.0), 'NCP': (1.0, 5.0), 'CH2O': (0.0, 4.0),
-    'FAF': (0.0, 7.0), 'TUE': (0.0, 24.0)
-}
+# Colonnes à supprimer avant l'entraînement
+COLUMNS_TO_DROP_PRE_TRAINING = ['CAEC', 'CALC', 'MTRANS', 'NObeyesdad', 'Weight', 'SMOKE', 'SCC', 'TUE']

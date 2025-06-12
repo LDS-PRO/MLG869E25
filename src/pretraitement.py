@@ -1,109 +1,84 @@
+# src/pretraitement.py
 import pandas as pd
-from sklearn.preprocessing import LabelEncoder, StandardScaler
-from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score
-from scipy.stats.mstats import winsorize
-import joblib 
-from config import DATASET_PATH
+import numpy as np
+from sklearn.preprocessing import LabelEncoder
+import joblib
+import os
+import shap
+from config import DATASET_PATH, MODELS_DIR
+
+print("--- Début de la génération des artefacts de prétraitement (Avec Résumé SHAP en DataFrame) ---")
+
+os.makedirs(MODELS_DIR, exist_ok=True)
 
 try:
     df = pd.read_csv(DATASET_PATH)
 except FileNotFoundError:
-    print("Le fichier 'ObesityDataSet_raw_and_data_sinthetic.csv' n'a pas été trouvé. Veuillez vérifier le chemin.")
+    print(f"ERREUR: Le fichier '{DATASET_PATH}' est introuvable.")
     exit()
 
 df_processed = df.copy()
 
-# 1. Encodage de la Variable Cible (NObeyesdad)
-le_target = LabelEncoder()
-df_processed['NObeyesdad_Encoded'] = le_target.fit_transform(df_processed['NObeyesdad'])
-# Sauvegarder l'encodeur de la cible
-joblib.dump(le_target, 'target_label_encoder.joblib')
-target_classes = le_target.classes_ # Garder pour référence
+# --- Les étapes 1 à 5 restent identiques ---
+# 1. Encodage de la Variable Cible
+le_target = LabelEncoder().fit(df['NObeyesdad'].unique())
+joblib.dump(le_target, os.path.join(MODELS_DIR, 'target_label_encoder.joblib'))
 
-# 2. Ingénierie de Caractéristiques
-df_processed['BMI'] = df_processed['Weight'] / (df_processed['Height']**2)
+# 2. Mappings et transformations de base
+transport_map = {'Walking': 4, 'Bike': 3, 'Public_Transportation': 2, 'Motorbike': 1, 'Automobile': 0}
+eating_freq_map = {'no': 0, 'Sometimes': 1, 'Frequently': 2, 'Always': 3}
+mappings = {'transport_map': transport_map, 'eating_freq_map': eating_freq_map}
+joblib.dump(mappings, os.path.join(MODELS_DIR, 'feature_mappings.joblib'))
 
-age_bins = [14, 19.99, 29.99, 39.99, 49.99, df_processed['Age'].max() + 1]
-age_labels = ['Adolescent (14-19)', 'Jeune Adulte (20-29)', 'Adulte (30-39)', 'Adulte Moyen (40-49)', 'Adulte Âgé (50+)']
-df_processed['Age_Category'] = pd.cut(df_processed['Age'], bins=age_bins, labels=age_labels, right=False)
-df_processed.drop('Age', axis=1, inplace=True)
-# Sauvegarder les bins et labels pour l'âge
-age_processing_info = {'bins': age_bins, 'labels': age_labels}
-joblib.dump(age_processing_info, 'age_processing_info.joblib')
+# 3. Application des transformations et du feature engineering
+df_processed['Age'] = np.ceil(df_processed['Age']).astype(int)
+df_processed['Gender'] = df_processed['Gender'].map(lambda x: 1 if str(x).lower() == 'female' else 0)
+df_processed['family_history_with_overweight'] = df_processed['family_history_with_overweight'].map(lambda x: 1 if str(x).lower() == 'yes' else 0)
+df_processed['FAVC'] = df_processed['FAVC'].map(lambda x: 1 if str(x).lower() == 'yes' else 0)
+df_processed['FCVC'] = df_processed['FCVC'].round().astype(int)
+df_processed['NCP'] = df_processed['NCP'].round().astype(int)
+df_processed['CH2O'] = df_processed['CH2O'].round().astype(int)
+df_processed['FAF'] = df_processed['FAF'].round().astype(int)
+df_processed['transport_activity_level'] = df_processed['MTRANS'].map(transport_map)
+df_processed['eating_between_meals_numeric'] = df_processed['CAEC'].map(eating_freq_map)
+df_processed['alcohol_numeric'] = df_processed['CALC'].map(eating_freq_map)
+df_processed['Age_squared'] = df_processed['Age']**2
+df_processed['Is_Young'] = (df_processed['Age'] < 30).astype(int)
+df_processed['Is_MiddleAge'] = ((df_processed['Age'] >= 30) & (df_processed['Age'] <= 50)).astype(int)
+df_processed['genetic_diet_risk'] = df_processed['family_history_with_overweight'] * df_processed['FAVC']
+df_processed['healthy_score'] = df_processed['FCVC'] + df_processed['CH2O']
+df_processed['unhealthy_score'] = df_processed['FAVC'] + df_processed['alcohol_numeric']
+df_processed['activity_calorie_balance'] = df_processed['FAF'] - df_processed['NCP']
+df_processed['sedentary_risk'] = (df_processed['TUE'].round().astype(int) > 1).astype(int)
 
-# 3. Encodage des Variables Catégorielles
-binary_cols = ['family_history_with_overweight', 'FAVC', 'SMOKE', 'SCC']
-for col in binary_cols:
-    df_processed[col] = df_processed[col].map({'yes': 1, 'no': 0})
+# 4. Suppression des colonnes inutiles
+columns_to_drop = ['CAEC', 'CALC', 'MTRANS', 'NObeyesdad', 'Weight', 'SMOKE', 'SCC', 'TUE']
+df_processed.drop(columns=columns_to_drop, inplace=True, errors='ignore')
 
-caec_mapping = {'no': 0, 'Sometimes': 1, 'Frequently': 2, 'Always': 3}
-calc_mapping = {'no': 0, 'Sometimes': 1, 'Frequently': 2, 'Always': 3}
-df_processed['CAEC'] = df_processed['CAEC'].map(caec_mapping)
-df_processed['CALC'] = df_processed['CALC'].map(calc_mapping)
-# Sauvegarder les mappings ordinaux
-ordinal_mappings = {'CAEC': caec_mapping, 'CALC': calc_mapping}
-joblib.dump(ordinal_mappings, 'ordinal_mappings.joblib')
+# 5. Définir l'ordre exact des colonnes
+final_model_columns_ordered = [
+    'Gender', 'Age', 'Height', 'family_history_with_overweight', 'FAVC', 'FCVC', 
+    'NCP', 'CH2O', 'FAF', 'transport_activity_level', 'eating_between_meals_numeric', 
+    'alcohol_numeric', 'genetic_diet_risk', 'activity_calorie_balance', 
+    'Age_squared', 'Is_Young', 'Is_MiddleAge', 'healthy_score', 'unhealthy_score', 
+    'sedentary_risk'
+]
+df_processed = df_processed[final_model_columns_ordered]
 
-nominal_cols_to_encode = ['Gender', 'MTRANS', 'Age_Category']
-df_processed = pd.get_dummies(df_processed, columns=nominal_cols_to_encode, drop_first=True)
+# 6. Sauvegarde de la liste de colonnes
+joblib.dump(final_model_columns_ordered, os.path.join(MODELS_DIR, 'model_columns.joblib'))
 
-# 4. Traitement des Variables Numériques
-numerical_features_to_process = ['Height', 'Weight', 'FCVC', 'NCP', 'CH2O', 'FAF', 'TUE', 'BMI']
 
-# Sauvegarder les limites de winsorizing (avant scaling)
-winsor_limits = {}
-for col_to_winsorize in ['Weight', 'BMI']:
-    if col_to_winsorize in df_processed.columns:
-        # Appliquer le winsorizing
-        winsored_data = winsorize(df_processed[col_to_winsorize], limits=[0.01, 0.01])
-        winsor_limits[col_to_winsorize] = (winsored_data.min(), winsored_data.max())
-        df_processed[col_to_winsorize] = winsored_data # Mettre à jour la colonne dans df_processed
-joblib.dump(winsor_limits, 'winsor_limits.joblib')
+# --- ÉTAPE CORRIGÉE : Créer et sauvegarder le résumé des données pour SHAP ---
+print("Création du résumé des données d'entraînement pour SHAP...")
+# On utilise shap.kmeans pour créer un petit jeu de données de référence
+summary_dense_data = shap.kmeans(df_processed, 15)
 
-numerical_cols_for_scaling = []
-for col in numerical_features_to_process:
-    if col in df_processed.columns:
-        numerical_cols_for_scaling.append(col)
+# --- CORRECTION ---
+# Convertir l'objet DenseData en DataFrame pandas avant de sauvegarder.
+# L'attribut .data contient les données sous forme de tableau numpy.
+shap_summary_df = pd.DataFrame(summary_dense_data.data, columns=df_processed.columns)
+joblib.dump(shap_summary_df, os.path.join(MODELS_DIR, 'shap_summary.joblib'))
+print("Résumé SHAP (en tant que DataFrame) sauvegardé.")
 
-X = df_processed.drop(['NObeyesdad', 'NObeyesdad_Encoded'], axis=1, errors='ignore')
-y = df_processed['NObeyesdad_Encoded']
-
-# Sauvegarder les noms des colonnes de X avant la séparation (après toutes les transformations)
-# C'est l'ordre et l'ensemble des colonnes que le modèle attendra
-model_columns = X.columns.tolist()
-joblib.dump(model_columns, 'model_columns.joblib')
-
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
-
-# Mise à l'échelle (Scaler ajusté sur X_train UNIQUEMENT)
-if numerical_cols_for_scaling:
-    scaler = StandardScaler()
-    X_train[numerical_cols_for_scaling] = scaler.fit_transform(X_train[numerical_cols_for_scaling])
-    X_test[numerical_cols_for_scaling] = scaler.transform(X_test[numerical_cols_for_scaling])
-    # Sauvegarder le scaler ajusté
-    joblib.dump(scaler, 'scaler.joblib')
-else:
-    print("Aucune colonne numérique spécifiée pour le scaling n'a été trouvée.")
-# --- (Fin des modifications pour la préparation) ---
-
-print("\n" + "="*50 + "\n")
-print("Préparation pour l'entraînement du modèle...")
-print(f"Colonnes du modèle X_train: {X_train.columns.tolist()}")
-print(f"Dimensions de X_train: {X_train.shape}")
-
-# Entraînement d'un modèle RandomForestClassifier simple
-print("\nEntraînement du modèle RandomForestClassifier...")
-model = RandomForestClassifier(n_estimators=100, random_state=42)
-model.fit(X_train, y_train)
-
-# Évaluation rapide du modèle
-y_pred_train = model.predict(X_train)
-y_pred_test = model.predict(X_test)
-print(f"Accuracy sur l'ensemble d'entraînement: {accuracy_score(y_train, y_pred_train):.4f}")
-print(f"Accuracy sur l'ensemble de test: {accuracy_score(y_test, y_pred_test):.4f}")
-
-# Sauvegarde du modèle entraîné
-joblib.dump(model, 'obesity_model.joblib')
-print("\nModèle et tous les actifs de prétraitement ont été sauvegardés.")
+print(f"\n--- Tous les artefacts de prétraitement ont été générés et sauvegardés dans {MODELS_DIR} ---")
